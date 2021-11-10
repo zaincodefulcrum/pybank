@@ -1,180 +1,201 @@
 from os import system as sys
 
 class BankAccount:
-    def __init__(self, Name, PassCode, AccNumber, Balance, AccoutType):
-        self.Name = Name
-        self.Passcode = PassCode
-        self.Balance = Balance
-        self.AccountType = AccoutType
-        self.AccNumber = AccNumber
+    def __init__(self, name, password, account_no, balance, account_type):
+        self.name = name
+        self.balance = balance
+        self.account_no = account_no
+        self.account_type = account_type
+        self.password = password
 
-    def FullName(self):
-        return self.Name
+    def account_number(self):
+        return self.account_no
 
-    def AccountNumber(self):
-        return self.AccNumber
+    def pass_code(self):
+        return self.password
+    
+    def check_balance(self):
+        return self.balance
 
-    def PassCode(self):
-        return self.Passcode
-
-    def CheckBalance(self):
-        return self.Balance
-
-    def CheckAccountType(self):
-        return self.AccountType
-
-    def AccDetails(self):
-        print("Account # ", self.AccNumber)
-        print("Name: ", self.Name)
-        print("Balance: ", self.Balance)
-        print("Account Type: ", self.AccountType)
-
-    def DepositBill(self,Bill):
-        if Bill >= 0:
-            self.Balance += Bill
-            return True
-        else:
-            return False
-
-    def DrawMoney(self,Money):
-        if self.Balance >= Money:
-            self.Balance -= Money
+    def check_account_type(self):
+        return self.account_type
+    
+    def deposit_bill(self, bill):
+        if bill >= 0:
+            self.balance += bill
             return True
         else:
             return False
     
-    def TransferMoney(self,Amount):
-        if self.Balance >= Amount:
-            self.Balance -= Amount
+    def draw_money(self, money):
+        if self.balance >= money:
+            self.balance -= money
             return True
         else:
             return False
+    
+    def account_details(self):
+        print("Account # ", self.account_no)
+        print("Name: ", self.name)
+        print("Balance: ", self.balance)
+        print("Account Type: ", self.account_type)
+    
+class Bank():
+    @staticmethod
+    def login(account_list, account_number, code):
+        sys('clear')
+        check1 = False
+        for i in range(len(account_list)):
+            if account_number == account_list[i].account_number() and code == account_list[i].pass_code():
+                return True,account_list[i]
+        return False
+    
+    @staticmethod
+    def transfer_money(sender_account_number, receiver_account_number, amount):
+        if receiver_account_number.deposit_bill(amount):
+            sender_account_number.balance -= amount 
+            return True
 
     @staticmethod
-    def Login(obj, AccNo, Code):
-        while(1):
-            chk1 = False
-            for i in range(len(obj)):
-                if (AccNo == obj[i].AccountNumber() and Code == obj[i].PassCode()):
-                    return (True,obj[i])
-            print("\nInvalid Credentials\n")
-            input("\nPress Any Key to Continue!\n")
-            sys('clear')
-            return (False,obj[i])
-
-    @staticmethod
-    def Compare(log, obj, AccNum):
-        chk2 = False
-        #AccNum = int(input("Enter Account Number you want to be compared with: "))
-        for j in range(len(obj)):
-            if AccNum == obj[j].AccountNumber():
-                chk2 = True
+    def compare(current_account, account_list, other_account_number):
+        check2 = False
+        for j in range(len(account_list)):
+            if other_account_number == account_list[j].account_number():
+                check2 = True
                 print("\nYour Details: ")
-                log.AccDetails()
-                print("Other Account's Details: ")
-                obj[j].AccDetails()
-                if log.CheckBalance() > obj[j].CheckBalance():
-                    print("\nYour Account is Larger than Provided Account\n\n")
-                elif log.CheckBalance() == obj[j].CheckBalance():
-                    print("Your Account is Equal to the Provided Account\n\n")
+                BankAccount.account_details(current_account)
+                print("\nOther Account's Details: ")
+                BankAccount.account_details(account_list[j])
+                if current_account.check_balance() > account_list[j].check_balance():
+                    return 1
+                elif current_account.check_balance() == account_list[j].check_balance():
+                    return 0
                 else:
-                    print("Your Account is Smaller than Provided Account\n\n")
-        if (not chk2):
-            print("Account Number Doesn't Exist\n\n")
-                
-AccNo=1000
-obj = []
+                    return -1
+        if not check2:
+            print("\nAccount Number Doesn't Exist\n\n")
 
-                                
-if __name__ == '__main__':
-   while(1):
-        option = int(input('1) Create Account \n2) Login \n0) Exit\nChoose:'))
-        if option == 1 :
-            sys("clear")
-            AccNo += 1
-            Name = input('Enter Full Name:')
-            Passcode = int(input("Enter Passcode:"))
+    @staticmethod
+    def find_account(account_number):
+        account_number.account_details()
+
+
+def run():
+    account_number_id = 1000
+    obj = []
+    while(1):
+        option = int(input("1) Create Account \n2) Login \n3) Find Account \n0) Exit \nChoose:"))
+
+        if option == 1:
+            sys('clear')
+            account_number_id += 1
+            name = input("Enter Full Nmae: ")
+            pass_code = int(input("Enter Passcode "))
             while(1):
-                AccSelect = int(input("Select Account Type from following:\n1) Current \n2) Saving \n3) Business \n"))
-                if AccSelect == 1:
-                    AccType = "Current"
+                account_select = int(input("Select Account Type from following:\n1) Current \n2) Saving \n3) Business\n"))
+                if account_select == 1:
+                    account_type = "Current"
                     break
-                elif AccSelect == 2:
-                    AccType = "Saving"
+                elif account_select == 2:
+                    account_type = "Saving"
                     break
-                elif AccSelect == 3:
-                    AccType = "Business"
+                elif account_select == 3:
+                    account_type = "Business"
                     break
-                else: 
-                    print("Invalid Selection")
-            Balance = 0
-            obj.append(BankAccount(Name, Passcode, AccNo, Balance, AccType))
-            print(f"Account Created Successfull!\nYour Account Number is {AccNo}\n\n")
+                else:
+                    print("\nInvalid Account Type\n")
+            balance = 0
+            obj.append(BankAccount(name, pass_code, account_number_id, balance, account_type))
+            print(f"Account Created Successfully\nYour Account Number is {account_number_id}\n\n")
             input("\nPress Any Key to Continue\n")
             sys("clear")
-        elif option == 2 :
-            sys("clear")
-            AccNo = int(input('Enter Account Number:'))
-            Code = int(input('Enter Passcode:'))
-            log = BankAccount.Login(obj, AccNo, Code)
+        
+        elif option == 2:
+            account_number = int(input("Enter Account Number: "))
+            code = int(input("Enter Passcode: "))
+            log = Bank.login(obj, account_number, code)
             if log[0]:
-                print('Login Successful!')
-                select=1
-                while(not select == 0 ):
+                print("Login Successful!")
+                select = 1
+                while not select == 0:
                     sys('clear')
-                    select = int(input('1) Check Balance \n2) Deposit Bill \n3) Draw Money \n4) Transfer Money \n5) Account Type \n6) Compare Your Account \n7) Account Details \n0) Exit\nChoose:'))
-                    if select == 1:#checkbalance
-                        print(log[1].CheckBalance())
+                    select = int(input("1) Check Balance \n2) Deposit Bill \n3) Draw Money \n4) Transfer Money \n5) Account Type \n6) Compare Your Account \n7) Account Details \n0) Log Out \nChoose:"))
+                    if select == 1:
+                        print(log[1].check_balance())
                         input("\nPress Any Key to Continue\n")
-                    elif select == 2:#depositbill
-                        Dep = int(input("Enter Deposit Amount:"))
-                        if log[1].DepositBill(Dep): 
-                            print("Money successfully deposited!")
+
+                    elif select == 2:
+                        deposit_money = int(input("Enter Deposit Amount: "))
+                        if log[1].deposit_bill(deposit_money):
+                            print("Money Successfully Deposited")
                         else:
-                            print('Money Must be Greater than 0!')
+                            print("Money must be Greater than 0!")
                         input("\nPress Any Key to Continue\n")
-                    elif select == 3:#draw money
-                        Amount = int(input('Enter Amount to with draw:'))
-                        if log[1].DrawMoney(Amount):
-                            print("Money Draw Successful!")
+
+                    elif select == 3:
+                        amount = int(input("Enter Amount to withdraw: "))
+                        if log[1].draw_money(amount):
+                            print("Money Draw Successfull")
                         else:
-                            print('Not enough cash!')
+                            print("Not Enough Cash")
                         input("\nPress Any Key to Continue\n")
-                    elif select == 4:#transfercash
+                    
+                    elif select == 4:
                         found = False
-                        Money = int(input('Enter Transfer amount:'))
-                        if log[1].TransferMoney(Money):
-                            TransferAccountNo = int(input('Enter Account Number of other User:'))
-                            if AccNo != TransferAccountNo >= 1001:
-                                for k in range(len(obj)):
-                                    if TransferAccountNo == obj[k].AccountNumber():
-                                        obj[k].DepositBill(Money)
-                                        found = True
+                        money = int(input("Enter Transfer Amount: "))
+                        transfer_account_number = int(input("Enter Account Number of Other User: "))
+                        if account_number_id != transfer_account_number >= 1001:
+                            for k in range(len(obj)):
+                                if transfer_account_number == obj[k].account_number() :
+                                    Bank.transfer_money(log[1], obj[k], money)
+                                    found = True
                             if not found:
                                 print("Invalid Account Number!")
                             else:
-                                print('Successful Money Transfer!')
+                                print("Successfull Money Transfer!")
                         else:
                             print("Not enough cash!")
                         input("\nPress Any Key to Continue\n")
+                    
                     elif select == 5:
-                        print(log[1].CheckAccountType())
+                        print(log[1].check_account_type())
                         input("\nPress Any Key to Continue\n")
+                    
                     elif select == 6:
-                        sys('clear')
-                        AccNum = int(input("Enter Account Number you want to be compared with: "))
-                        BankAccount.Compare(log[1],obj,AccNum)
+                        other_account_number = int(input("Enter Account Number you want to compare with: "))
+                        value = Bank.compare(log[1], obj, other_account_number)
+                        if value == 1:
+                            print("Your Account is Greater than Provided Account!")
+                        elif value == 0:
+                            print("Your Account is Equal to the Provided Account!")
+                        else:
+                            print("Your Account is Smaller than Provided Account!")
                         input("\nPress Any Key to Continue\n")
+                    
                     elif select == 7:
-                        print(log[1].AccDetails())
-                        input("\nPress Any Key to Continue\n")
+                        print(BankAccount.account_details(log[1]))
+                        input("\nPress any Key to Continue\n")
+                    
                     elif select == 0:
                         break
+
                     else:
-                        print('Incorrect Option!\n\n')
-                        input("\nPress Any Key to Continue\n")
+                        print("Incorrect Option!")
+                        input("\nPress any Key to Continue\n")
+
+        elif option == 3:
+            account_number = int(input("Enter Account Number:"))
+            for i in range(len(obj)):
+                if obj[i].account_number() == account_number:
+                    Bank.find_account(obj[i])
+            input("\nPress any Key to Continue\n")
+            sys("clear")
 
         elif option == 0:
             break
+
         else:
-            print('Invalid Selection!\n\n')
+            print("\nInvalid option\n")
+
+if __name__ == "__main__":
+    run()
