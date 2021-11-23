@@ -1,4 +1,4 @@
-from os import name, system as sys
+from os import system as sys
 
 class BankAccount:
     def __init__(self, name, password, account_no, balance, account_type):
@@ -42,29 +42,31 @@ class BankAccount:
   
 class Bank:
 
+    ACCOUNT_TYPES = ["Current", "Saving", "Business"]
     bank_accounts = []
-    logged_in = False
+    logged_in_account = None
 
     def total_account(self):
-        return (len(self.bank_accounts))
+        return len(self.bank_accounts)
 
     def create_account(self, name, code, account_type):
-        self.bank_accounts.append(BankAccount(name, code, 1000+len(self.bank_accounts)+1, 0, account_type))
+        account = BankAccount(name, code, 1000 + self.total_account() + 1, 0, account_type)
+        self.bank_accounts.append(account)
+        return account.account_no
 
     def find_account(self, account_number):
-        for i in range(len(Bank.bank_accounts)):
-            if account_number == Bank.bank_accounts[i].account_number():
-                return True, Bank.bank_accounts[i]
-        return False, "Account not found!"
+        for i in range(len(self.bank_accounts)):
+            if account_number == self.bank_accounts[i].account_number():
+                return True, self.bank_accounts[i]
+        return False, f"{account_number} Account Not Found!"
 
     def login(self, account_number, code):
         status, response = self.find_account(account_number)
         if status:
             if code == response.pass_code():
                 self.logged_in_account = response
-                Bank.logged_in = True
-                return True, response
-        return False, "Account Not Found!"
+                return True, "Successfully Login!"
+        return False, f"{account_number} Account Not Found!"
 
     def transfer_money(self, sender_account_number, receiver_account_number, amount):
         status_1, response_1 = self.find_account(sender_account_number)
@@ -72,77 +74,80 @@ class Bank:
         if status_1 and status_2:
             if response_1.draw_money(amount):
                 response_2.deposit_bill(amount)
-                return True
+                return True, "Money Successfully transferred!"
         else:
-            return False
+            if status_1 == False:
+                account_not_found = sender_account_number
+            elif status_2 == False:
+                account_not_found = receiver_account_number
+            if status_1 == False and status_2 == False:
+                return False, f"Both {sender_account_number} and {receiver_account_number} are invalid!"
+            return False, f"{account_not_found} Account Not Found!"
     
     def compare(self, current_account, other_account):
         status_1, response_1 = self.find_account(current_account)
         status_2, response_2 = self.find_account(other_account)
         if status_1 and status_2:
             if response_1.check_balance() > response_2.check_balance():
-                return True, 1
+                return True, "Your Account is Greater than Provided Account!"
             if response_1.check_balance() < response_2.check_balance():
-                return True, -1
+                return True, "Your Account is Smaller than Provided Account!"
             if response_1.check_balance() == response_2.check_balance():
-                return True, 0
+                return True, "Your Account is Equal to the Provided Account!"
         else:
-            return False, f"{other_account} Account Not Found!"
-    
+            if status_1 == False:
+                account_not_found = current_account
+            elif status_2 == False:
+                account_not_found = other_account
+            if status_1 == False and status_2 == False:
+                return False, f"{current_account} and {other_account} are invalid!"
+            return False, f"{account_not_found} Account Not Found!"
    
     def account_details(self, account_number):
         status,response = self.find_account(account_number)
         if status:
             response.account_details()
         else:
-            return False
+            return False, f"{account_number} Account Not Found!"
    
     def logout(self):
-        self.logged_in = None
-        return self.logged_in
+        self.logged_in_account = None
+        return self.logged_in_account
 
     def is_logged_in(self):
-        if self.logged_in:
+        if self.logged_in_account:
             return True
         return False
 
 def run():
-    account_number_id = 1000 # Wrirting here just to print account number for user after account creation 
     bank = Bank()
-    while(1):
+    while(True):
         option = int(input("1) Create Account \n2) Login \n3) Find Account \n4) Total Accounts\n0) Exit \nChoose:"))
         if option == 1:
             sys('clear')
-            account_number_id += 1
             name = input("Enter Full Name: ")
             pass_code = int(input("Enter Passcode "))
-            while(1):
-                ACCOUNT_TYPES = ["Current","Saving","Business"]
-                account_select = int(input("Select Account Type from following:\n1) Current \n2) Saving \n3) Business\n"))
-                if account_select == 1:
-                    account_type = ACCOUNT_TYPES[1]
-                    break
-                elif account_select == 2:
-                    account_type = ACCOUNT_TYPES[2]
-                    
-                    break
-                elif account_select == 3:
-                    account_type = ACCOUNT_TYPES[3]
-                    break
+            while(True):
+                msg = "\n".join(f'{index + 1}) {account_type}' for index, account_type in enumerate(bank.ACCOUNT_TYPES))
+                print(msg)
+                account_select = int(input())
+                if 0 < account_select <= len(bank.ACCOUNT_TYPES):
+                    account_type = bank.ACCOUNT_TYPES[account_select - 1]   
+                    break 
                 else:
-                    print("\nInvalid Account Type\n")
-            bank.create_account(name, pass_code,account_type)
-            print(f"Account Created Successfully\nYour Account Number is {account_number_id}\n\n")
-            input("\nPress Any Key to Continue\n")
+                    print('\Invalid Selection\n')
+                input('Press any key to continue!')
+            print("Account Created and your ID is:", bank.create_account(name, pass_code, account_type))
+            input("\nPress Any Key to Continue")
             sys("clear")
         
         elif option == 2:
             if bank.is_logged_in() == False:
                 account_number = int(input("Enter Account Number: "))
                 code = int(input("Enter Passcode: "))
-                log = bank.login(account_number, code)
+                status, response = bank.login(account_number, code)
 
-            if bank.is_logged_in:
+            if bank.is_logged_in():
                 print("Login Successful!")
                 input("\nPress Any Key to Continue\n")
                 select = 1
@@ -150,12 +155,12 @@ def run():
                     sys('clear')
                     select = int(input("1) Check Balance \n2) Deposit Bill \n3) Draw Money \n4) Transfer Money \n5) Account Type \n6) Compare Your Account \n7) Account Details \n0) Log Out \nChoose:"))
                     if select == 1:
-                        print(log[1].check_balance())
+                        print(bank.logged_in_account.check_balance())
                         input("\nPress Any Key to Continue\n")
 
                     elif select == 2:
                         deposit_money = int(input("Enter Deposit Amount: "))
-                        if log[1].deposit_bill(deposit_money):
+                        if bank.logged_in_account.deposit_bill(deposit_money):
                             print("Money Successfully Deposited")
                         else:
                             print("Money must be Greater than 0!")
@@ -163,7 +168,7 @@ def run():
 
                     elif select == 3:
                         amount = int(input("Enter Amount to withdraw: "))
-                        if log[1].draw_money(amount):
+                        if bank.logged_in_account.draw_money(amount):
                             print("Money Draw Successfull")
                         else:
                             print("Not Enough Cash")
@@ -172,33 +177,28 @@ def run():
                     elif select == 4:
                         money = int(input("Enter Transfer Amount: "))
                         receiver_account_number = int(input("Enter Account Number of Other User: "))
-                        value = bank.transfer_money(log[1].account_number(), receiver_account_number, money)
-                        if value:
-                            print("\nSuccessfull Money Transfer!\n")
+                        status, response = bank.transfer_money(bank.logged_in_account.account_number(), receiver_account_number, money)
+                        if status:
+                            print(response)
                         else:
-                            print("\nInvalid Details!\n")
+                            print(response)
                         input("\nPress Any Key to Continue\n")
                             
                     elif select == 5:
-                        print(log[1].check_account_type())
+                        print(bank.logged_in_account.check_account_type())
                         input("\nPress Any Key to Continue\n")
                     
                     elif select == 6:
                         other_account_number = int(input("Enter Account Number you want to compare with: "))
-                        value = bank.compare(log[1].account_number(), other_account_number)
-                        if(value[0]):
-                            if value[1] == 1:
-                                print("Your Account is Greater than Provided Account!")
-                            elif value[1] == -1:
-                                print("Your Account is Smaller than Provided Account!")
-                            else:
-                                print("Your Account is Equal to the Provided Account!")
+                        status, response = bank.compare(bank.logged_in_account.account_number(), other_account_number)
+                        if(status):
+                            print(response)
                         else:
                             print("Invalid Account!")
                         input("\nPress Any Key to Continue\n")
                     
                     elif select == 7:
-                        print(BankAccount.account_details(log[1]))
+                        print(BankAccount.account_details(bank.logged_in_account))
                         input("\nPress any Key to Continue\n")
 
                     elif select == 0:
